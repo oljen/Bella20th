@@ -1,54 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Galactic Birthday Beatdown</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
       background-color: black;
-      overflow: hidden;
       font-family: 'Press Start 2P', monospace;
-      color: white;
-      text-align: center;
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
     }
-    canvas {
-      display: block;
-      margin: 0 auto;
+
+    #gameWrapper {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       background: url('space_arena_background.png') no-repeat center center;
       background-size: cover;
     }
-    #message, #instructions {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 0.75em;
-  line-height: 1.6;
-  background: rgba(0, 0, 0, 0.85);
-  padding: 20px;
-  border-radius: 10px;
-  max-width: 700px;
-  width: 90%;
-  z-index: 10;
-  color: white;
-  text-align: center;
-  pointer-events: none;
-  font-family: 'Press Start 2P', monospace;
-}
-#message {
-  display: none;
-}
-#instructions {
-  display: block;
-}
 
+    canvas {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+    }
+
+    #message, #instructions {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0.75em;
+      line-height: 1.6;
+      background: rgba(0, 0, 0, 0.85);
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 90%;
+      z-index: 10;
+      color: white;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    #message {
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      #message, #instructions {
+        font-size: 0.6em;
+        padding: 10px;
+      }
+    }
   </style>
 </head>
 <body>
-  <div id="message">🎉 HAPPY BIRTHDAY YSABELLA! 🎉<br><br>
+  <div id="gameWrapper">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="message">🎉 HAPPY BIRTHDAY YSABELLA! 🎉<br><br>
     I’m so proud of everything you’ve done so far! Your twenties are going to bring so many amazing memories, achievements, and new experiences.<br><br>
     Just keep trusting your intelligence, drive, and resilience — they’ll take you exactly where you’re meant to go.<br><br>
     I’m happy we got to clear things up between us and I truly do appreciate you.<br><br>
@@ -56,18 +75,21 @@
     You’ve got so much ahead of you, and I can’t wait to see everything you become.<br><br>
     GOOD LUCK AT IREC!
   </div>
-  <div id="instructions">UFC 400<br>YSABELLA MCAULIFFE VS KhaNotorious O’Topushvili Sugarboy<br><br>PRESS TO PUNCH!</div>
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="instructions">UFC 400<br>YSABELLA MCAULIFFE VS KhaNotorious O’Topushvili Sugarboy<br><br>PRESS TO PUNCH!</div>
+  </div>
 
   <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
     const punchSound = new Audio('punch_grunt.mp3');
     const backgroundMusic = new Audio('ufc.mp3');
     const fightStartSound = new Audio('fight.mp3');
     const koSound = new Audio('ko.mp3');
-    let hasPlayedFightSound = false;
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
     const instructions = document.getElementById('instructions');
+    const messageBox = document.getElementById('message');
+
+    let gameStarted = false;
+    let hasPlayedFightSound = false;
 
     const playerIdleImg = new Image();
     const playerPunchImg = new Image();
@@ -82,10 +104,9 @@
     let currentPlayerImg = playerIdleImg;
     let currentEnemyImg = enemyImg;
     let isPunching = false;
-    let gameStarted = false;
 
-    const player = { x: 300, y: 350, width: 128, height: 128 };
-    const enemy = { x: 400, y: 350, width: 128, height: 128, hp: 10 };
+    const player = { x: 200, y: 350, width: 128, height: 128 };
+    const enemy = { x: 450, y: 350, width: 128, height: 128, hp: 10 };
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -101,44 +122,50 @@
     }
 
     function handlePunch() {
-  if (!gameStarted) {
-    backgroundMusic.play().catch(() => {});
-    instructions.style.display = 'none';
-    gameStarted = true;
-  }
+      if (!gameStarted) {
+        backgroundMusic.play().catch(() => {});
+        instructions.style.display = 'none';
+        gameStarted = true;
+      }
 
-  if (!hasPlayedFightSound) {
-    fightStartSound.play();
-    hasPlayedFightSound = true;
-  }
+      if (!hasPlayedFightSound) {
+        fightStartSound.play();
+        hasPlayedFightSound = true;
+      }
 
-  punchSound.currentTime = 0;
-  punchSound.play();
+      punchSound.currentTime = 0;
+      punchSound.play();
 
-  if (enemy.hp > 0) {
-    currentPlayerImg = playerPunchImg;
-    currentEnemyImg = enemyHitImg;
-    isPunching = true;
-    enemy.hp--;
-    if (enemy.hp === 0) {
-      document.getElementById('message').style.display = 'block';
-      koSound.play();
+      if (enemy.hp > 0) {
+        currentPlayerImg = playerPunchImg;
+        currentEnemyImg = enemyHitImg;
+        isPunching = true;
+        enemy.hp--;
+        if (enemy.hp === 0) {
+          messageBox.style.display = 'block';
+          koSound.play();
+        }
+      }
     }
-  }
-}
 
+    function resetPunch() {
+      currentPlayerImg = playerIdleImg;
+      currentEnemyImg = enemyImg;
+      isPunching = false;
+    }
+
+    // Event listeners (mouse + keyboard + touch)
     canvas.addEventListener('mousedown', handlePunch);
+    canvas.addEventListener('mouseup', resetPunch);
     document.addEventListener('keydown', handlePunch);
-
-    canvas.addEventListener('mouseup', () => {
-      currentPlayerImg = playerIdleImg;
-      currentEnemyImg = enemyImg;
-      isPunching = false;
+    document.addEventListener('keyup', resetPunch);
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      handlePunch();
     });
-    document.addEventListener('keyup', () => {
-      currentPlayerImg = playerIdleImg;
-      currentEnemyImg = enemyImg;
-      isPunching = false;
+    canvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      resetPunch();
     });
 
     function gameLoop() {
@@ -146,6 +173,7 @@
       requestAnimationFrame(gameLoop);
     }
 
+    // Run game once assets are ready
     playerIdleImg.onload = () => {
       playerPunchImg.onload = () => {
         enemyImg.onload = () => {
@@ -158,3 +186,4 @@
   </script>
 </body>
 </html>
+
