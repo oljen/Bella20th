@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galactic Birthday Beatdown</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: black;
+      overflow: hidden;
+      font-family: 'Press Start 2P', monospace;
+      color: white;
+      text-align: center;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: url('space_arena_background.png') no-repeat center center;
+      background-size: cover;
+    }
+    #message, #instructions {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.75em;
+  line-height: 1.6;
+  background: rgba(0, 0, 0, 0.85);
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 700px;
+  width: 90%;
+  z-index: 10;
+  color: white;
+  text-align: center;
+  pointer-events: none;
+  font-family: 'Press Start 2P', monospace;
+}
+#message {
+  display: none;
+}
+#instructions {
+  display: block;
+}
+
+  </style>
+</head>
+<body>
+  <div id="message">🎉 HAPPY BIRTHDAY YSABELLA! 🎉<br><br>
+    I’m so proud of everything you’ve done so far! Your twenties are going to bring so many amazing memories, achievements, and new experiences.<br><br>
+    Just keep trusting your intelligence, drive, and resilience — they’ll take you exactly where you’re meant to go.<br><br>
+    I’m happy we got to clear things up between us and I truly do appreciate you.<br><br>
+    Even if life gets busy and we don’t always talk, please know I’ll always be cheering you on from wherever I am.<br><br>
+    You’ve got so much ahead of you, and I can’t wait to see everything you become.<br><br>
+    GOOD LUCK AT IREC!
+  </div>
+  <div id="instructions">UFC 400<br>YSABELLA MCAULIFFE VS KhaNotorious O’Topushvili Sugarboy<br><br>PRESS TO PUNCH!</div>
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+  <script>
+    const punchSound = new Audio('punch_grunt.mp3');
+    const fightStartSound = new Audio('fight.mp3');
+    const koSound = new Audio('ko.mp3');
+    let hasPlayedFightSound = false;
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const instructions = document.getElementById('instructions');
+
+    const playerIdleImg = new Image();
+    const playerPunchImg = new Image();
+    const enemyImg = new Image();
+    const enemyHitImg = new Image();
+
+    playerIdleImg.src = 'player_sprite.png';
+    playerPunchImg.src = 'player_sprite_punch.png';
+    enemyImg.src = 'enemy_sprite.png';
+    enemyHitImg.src = 'enemy_sprite_hit.png';
+
+    let currentPlayerImg = playerIdleImg;
+    let currentEnemyImg = enemyImg;
+    let isPunching = false;
+    let gameStarted = false;
+
+    const player = { x: 150, y: 350, width: 128, height: 128 };
+    const enemy = { x: 450, y: 350, width: 128, height: 128, hp: 10 };
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(currentPlayerImg, player.x, player.y, player.width, player.height);
+
+      ctx.save();
+      ctx.scale(-1, 1);
+      ctx.drawImage(currentEnemyImg, -enemy.x - enemy.width, enemy.y, enemy.width, enemy.height);
+      ctx.restore();
+
+      ctx.fillStyle = 'red';
+      ctx.fillRect(enemy.x, enemy.y - 20, enemy.hp * 10, 10);
+    }
+
+    function handlePunch() {
+      if (!hasPlayedFightSound) {
+        fightStartSound.play();
+        hasPlayedFightSound = true;
+      }
+      if (!gameStarted) {
+        instructions.style.display = 'none';
+        gameStarted = true;
+      }
+      punchSound.currentTime = 0;
+      punchSound.play();
+      if (!gameStarted) {
+        instructions.style.display = 'none';
+        gameStarted = true;
+      }
+      if (enemy.hp > 0) {
+        currentPlayerImg = playerPunchImg;
+        currentEnemyImg = enemyHitImg;
+        isPunching = true;
+        enemy.hp--;
+        if (enemy.hp === 0) {
+          document.getElementById('message').style.display = 'block';
+          koSound.play();
+        }
+      }
+    }
+
+    canvas.addEventListener('mousedown', handlePunch);
+    document.addEventListener('keydown', handlePunch);
+
+    canvas.addEventListener('mouseup', () => {
+      currentPlayerImg = playerIdleImg;
+      currentEnemyImg = enemyImg;
+      isPunching = false;
+    });
+    document.addEventListener('keyup', () => {
+      currentPlayerImg = playerIdleImg;
+      currentEnemyImg = enemyImg;
+      isPunching = false;
+    });
+
+    function gameLoop() {
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    playerIdleImg.onload = () => {
+      playerPunchImg.onload = () => {
+        enemyImg.onload = () => {
+          enemyHitImg.onload = () => {
+            gameLoop();
+          };
+        };
+      };
+    };
+  </script>
+</body>
+</html>
