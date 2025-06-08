@@ -36,21 +36,24 @@
     }
 
     #message, #instructions {
-      position: absolute;
-      top: 45%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 0.65em;
-      line-height: 1.6;
-      background: rgba(0, 0, 0, 0.85);
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 100%;
-      z-index: 10;
-      color: white;
-      text-align: center;
-      pointer-events: none;
-    }
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(0.5em, 2vw, 0.75em);
+  line-height: 1.6;
+  background: rgba(0, 0, 0, 0.85);
+  padding: 5vw;
+  border-radius: 10px;
+  width: 90vw;
+  max-width: 700px;
+  z-index: 10;
+  color: white;
+  text-align: center;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
 
     #message {
       display: none;
@@ -190,5 +193,4 @@
   </script>
 </body>
 </html>
-
 
